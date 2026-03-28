@@ -11,4 +11,4 @@
 - [x] Audit the publish surface and confirm GitHub access.
 - [x] Add repository documentation for the March 28, 2026 application state.
 - [x] Add GitHub templates and CI for the initial public repo.
-- [ ] Initialize git locally, push the repository, and populate remote metadata.
+- [x] Initialize git locally, push the repository, and populate remote metadata.
