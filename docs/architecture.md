@@ -4,11 +4,27 @@ Current as of **March 28, 2026**.
 
 ## Overview
 
-SeatScout is a single-page React application built with Vite. It ships a curated venue atlas and derives all seat-map and section-detail behavior locally in the browser.
+SeatScout is a Next.js App Router application with a client-heavy seat-mapping shell. It ships a curated venue atlas and derives all seat-map and section-detail behavior locally in the browser.
 
 There is no backend, no API contract, and no runtime AI dependency in the current architecture.
 
 ## Main Modules
+
+### `app/layout.tsx`
+
+Owns:
+
+- root HTML shell
+- global metadata
+- favicon and viewport settings
+- global stylesheet import
+
+### `app/page.tsx`
+
+Owns:
+
+- the App Router entry point
+- mounting the client-side SeatScout shell into the default route
 
 ### `src/App.jsx`
 
@@ -17,7 +33,7 @@ Owns:
 - homepage flow
 - guided atlas entry points
 - filter state
-- venue-detail routing through local view state
+- venue-detail routing through local view state inside the client shell
 - geolocation request flow
 - reveal and entrance motion helpers
 
@@ -65,17 +81,18 @@ Owns:
 
 1. `rawVenues` are curated manually.
 2. `buildVenueProfile()` adds `slug` and generated `sections`.
-3. The app derives filtered venue lists from local UI state.
-4. Selecting a venue switches the app into the venue-detail view.
-5. Selecting a section updates the section inspector and row-band guidance.
+3. `app/page.tsx` mounts the client application shell.
+4. The app derives filtered venue lists from local UI state.
+5. Selecting a venue switches the app into the venue-detail view.
+6. Selecting a section updates the section inspector and row-band guidance.
 
 ## Routing Model
 
-Routing is currently local-state based rather than URL-router based. This keeps the app simple for a static deployment, but it also means:
+The application now uses Next.js App Router at the framework level, but the product flow inside the main client shell is still local-state based rather than URL-route based. This keeps the current experience simple while leaving room for future deep-linking. It also means:
 
 - direct deep links do not yet exist
 - browser history is not route-aware
-- future public deployment may benefit from moving to URL-backed routing
+- future venue pages may benefit from moving to URL-backed routing within the Next app
 
 ## Geolocation
 

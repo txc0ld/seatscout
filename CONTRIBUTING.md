@@ -45,6 +45,12 @@ When editing [`src/data/venues.js`](./src/data/venues.js):
 
 See [docs/data-atlas.md](./docs/data-atlas.md) for more detail.
 
+## Framework Notes
+
+- The repository now runs on Next.js App Router
+- The current product shell in [`src/App.jsx`](./src/App.jsx) remains a client component
+- Venue flow is still local-state based inside that shell, even though the framework is now Next.js
+
 ## Pull Requests
 
 Every PR should include:

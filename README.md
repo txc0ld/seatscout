@@ -1,6 +1,6 @@
 # SeatScout
 
-SeatScout is a glass-forward React seat-mapping app for major stadiums and arenas. It helps fans browse venues, inspect bowl layouts, and compare section quality before buying tickets.
+SeatScout is a glass-forward Next.js seat-mapping app for major stadiums and arenas. It helps fans browse venues, inspect bowl layouts, and compare section quality before buying tickets.
 
 ## Current Snapshot
 
@@ -23,10 +23,10 @@ Current as of **March 28, 2026**.
 
 ## Tech Stack
 
+- Next.js 16 App Router
 - React 19
 - React DOM 19
-- Vite 6
-- `@vitejs/plugin-react` 5
+- TypeScript 6 baseline
 - Validated locally on Node `25.6.0` and npm `11.8.0`
 
 ## Getting Started
@@ -36,23 +36,26 @@ npm install
 npm run dev
 ```
 
-Open the local app served by Vite, then use the home hero or atlas controls to move into venue detail pages.
+Open the local app served by Next.js, then use the home hero or atlas controls to move into venue detail pages.
 
 ## Scripts
 
 ```bash
 npm run dev
 npm run build
-npm run preview
+npm run start
 ```
 
 ## Repository Structure
 
 ```text
+app/
+  layout.tsx            Next.js root layout and metadata
+  page.tsx              App Router entry point
 src/
-  App.jsx              Main application shell and UI flow
-  data/venues.js       Curated venue atlas and generated section data
-  styles.css           Global presentation layer and responsive UI system
+  App.jsx               Client application shell and UI flow
+  data/venues.js        Curated venue atlas and generated section data
+  styles.css            Global presentation layer and responsive UI system
 public/
   favicon.svg          App icon
 docs/
@@ -60,6 +63,8 @@ docs/
   data-atlas.md        Venue atlas model, sourcing, and update guidance
 .github/
   workflows/ci.yml     Build verification on GitHub Actions
+next.config.ts         Next.js framework config
+tsconfig.json          TypeScript project config
 ```
 
 ## Data Model
@@ -100,5 +105,5 @@ Manual browser verification was also completed on desktop and mobile layouts on 
 
 ## Notes
 
-- The app intentionally preserves the existing SeatScout palette and typography defined during the original frontend-polish pass.
+- The app intentionally preserves the existing SeatScout palette and typography defined during the original frontend-polish pass through the Next.js migration.
 - There is no backend in this repository. All venue and seat-map behavior ships from the local curated atlas.

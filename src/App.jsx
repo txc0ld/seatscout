@@ -1,3 +1,5 @@
+"use client";
+
 import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 import { buildSectionDetail, featuredVenues, formatDistance, geography, getNearbyVenues, venues } from "./data/venues.js";
 
@@ -75,7 +77,7 @@ function RatingBar({ label, value }) {
   );
 }
 
-function VenueMap({ venue, sections, selectedSectionId, onSelect, interactive = true }) {
+function VenueMap({ venue, sections, selectedSectionId, hoveredSectionId, onSelect, onHover, interactive = true }) {
   const centerX = 240;
   const centerY = 240;
   const grouped = sections.reduce((accumulator, section) => {
@@ -91,6 +93,7 @@ function VenueMap({ venue, sections, selectedSectionId, onSelect, interactive = 
   const step = levels.length > 1 ? (outerRadius - innerRadius) / levels.length : outerRadius - innerRadius;
   const radii = Object.fromEntries(levels.map((level, index) => [level, { inner: innerRadius + index * step, outer: innerRadius + (index + 1) * step - 6 }]));
   const halfBowl = venue.type === "amphitheater" || venue.type === "horseshoe";
+  const previewSection = sections.find((section) => section.id === hoveredSectionId) || sections.find((section) => section.id === selectedSectionId) || sections[0];
 
   function polar(angle, radius) {
     const radians = ((angle - 90) * Math.PI) / 180;
@@ -122,7 +125,7 @@ function VenueMap({ venue, sections, selectedSectionId, onSelect, interactive = 
           ) : (
             <rect x="165" y="170" width="150" height="110" rx="22" fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.24)" />
           )}
-          <text x="240" y="230" textAnchor="middle" className="map-label">
+          <text x="240" y="230" textAnchor="middle" className="map-label" pointerEvents="none">
             {venue.type === "arena" || venue.type === "amphitheater" ? "STAGE" : "PITCH"}
           </text>
         </g>
@@ -143,20 +146,45 @@ function VenueMap({ venue, sections, selectedSectionId, onSelect, interactive = 
             const [x4, y4] = polar(start, ring.inner);
             const [labelX, labelY] = polar((start + end) / 2, (ring.inner + ring.outer) / 2);
             const selected = selectedSectionId === section.id;
-            const fill = selected ? tone : `${tone}1f`;
+            const hovered = hoveredSectionId === section.id;
+            const fill = selected ? tone : hovered ? `${tone}3d` : `${tone}1f`;
 
             return (
               <g key={section.id}>
                 <path
-                  className="map-section"
+                  className={`map-section${selected ? " is-selected" : ""}${hovered ? " is-hovered" : ""}`}
                   d={`M ${x1} ${y1} A ${ring.outer} ${ring.outer} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${ring.inner} ${ring.inner} 0 ${largeArc} 0 ${x4} ${y4} Z`}
                   fill={fill}
-                  stroke={selected ? "#fff" : tone}
+                  stroke={selected || hovered ? "#fff" : tone}
                   strokeWidth={selected ? "2.4" : "1"}
+                  tabIndex={interactive ? 0 : -1}
+                  role={interactive ? "button" : undefined}
+                  aria-label={interactive ? `${section.name}, ${section.level}, rating ${section.overallRating.toFixed(1)}` : undefined}
+                  aria-pressed={interactive ? selected : undefined}
+                  onMouseEnter={interactive ? () => onHover(section.id) : undefined}
+                  onMouseLeave={interactive ? () => onHover(null) : undefined}
+                  onFocus={interactive ? () => onHover(section.id) : undefined}
+                  onBlur={interactive ? () => onHover(null) : undefined}
                   onClick={interactive ? () => onSelect(section.id) : undefined}
+                  onKeyDown={
+                    interactive
+                      ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onSelect(section.id);
+                          }
+                        }
+                      : undefined
+                  }
                   style={{ cursor: interactive ? "pointer" : "default" }}
                 />
-                <text x={labelX} y={labelY + 3} textAnchor="middle" className={`map-name${selected ? " is-selected" : ""}`}>
+                <text
+                  x={labelX}
+                  y={labelY + 3}
+                  textAnchor="middle"
+                  className={`map-name${selected ? " is-selected" : ""}${hovered ? " is-hovered" : ""}`}
+                  pointerEvents="none"
+                >
                   {section.name.replace(/^(Section|Block|Bay|Setor|Sector|Stand|Gate|Terrace)\s*/i, "").slice(0, 6)}
                 </text>
               </g>
@@ -170,17 +198,32 @@ function VenueMap({ venue, sections, selectedSectionId, onSelect, interactive = 
           ["E", 454, 243],
           ["W", 24, 243],
         ].map(([label, x, y]) => (
-          <text key={label} x={x} y={y} textAnchor="middle" className="map-compass">
+          <text key={label} x={x} y={y} textAnchor="middle" className="map-compass" pointerEvents="none">
             {label}
           </text>
         ))}
-        <circle cx="240" cy="240" r="214" fill="url(#seat-sheen)" />
+        <circle cx="240" cy="240" r="214" fill="url(#seat-sheen)" pointerEvents="none" />
       </svg>
       <div className="map-legend">
         {levels.map((level) => (
           <span key={level}>{level}</span>
         ))}
       </div>
+      {interactive && previewSection && (
+        <div className={`map-preview${hoveredSectionId ? " is-hovering" : ""}`}>
+          <div className="map-preview-head">
+            <div>
+              <p className="eyebrow">{hoveredSectionId ? "Hover Preview" : "Selected Section"}</p>
+              <strong>{previewSection.name}</strong>
+            </div>
+            <span>{previewSection.overallRating.toFixed(1)} / 5</span>
+          </div>
+          <p className="map-preview-copy">
+            {previewSection.level} · {previewSection.zone} · {previewSection.priceRange}
+          </p>
+          <p className="map-preview-copy">{previewSection.bestFor}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -334,6 +377,7 @@ export default function App() {
   const [typeFilter, setTypeFilter] = useState("All");
   const [sortKey, setSortKey] = useState("featured");
   const [heroIndex, setHeroIndex] = useState(0);
+  const [hoveredSectionId, setHoveredSectionId] = useState(null);
 
   const deferredQuery = useDeferredValue(query);
   const activeVenue = venues.find((venue) => venue.id === activeVenueId) || venues[0];
@@ -342,6 +386,7 @@ export default function App() {
     if (!activeVenue) return;
     const preferred = [...activeVenue.sections].sort((left, right) => right.overallRating - left.overallRating)[0];
     setSelectedSectionId(preferred?.id || activeVenue.sections[0]?.id || null);
+    setHoveredSectionId(null);
   }, [activeVenueId]);
 
   useEffect(() => {
@@ -507,10 +552,17 @@ export default function App() {
               <div className="panel-head">
                 <div>
                   <p className="eyebrow">Bowl Map</p>
-                  <h2>Tap a section to inspect the seat quality</h2>
+                  <h2>Hover, focus, or tap a section to inspect the seat quality</h2>
                 </div>
               </div>
-              <VenueMap venue={activeVenue} sections={activeVenue.sections} selectedSectionId={selectedSectionId} onSelect={setSelectedSectionId} />
+              <VenueMap
+                venue={activeVenue}
+                sections={activeVenue.sections}
+                selectedSectionId={selectedSectionId}
+                hoveredSectionId={hoveredSectionId}
+                onSelect={setSelectedSectionId}
+                onHover={setHoveredSectionId}
+              />
               <div className="detail-grid summary-grid">
                 {Object.entries({
                   Opened: activeVenue.opened,
@@ -532,7 +584,15 @@ export default function App() {
                 <h2>High-confidence sections</h2>
                 <div className="stack-list">
                   {topSections.map((section) => (
-                    <button key={section.id} className="stack-row" onClick={() => setSelectedSectionId(section.id)}>
+                    <button
+                      key={section.id}
+                      className={`stack-row${hoveredSectionId === section.id ? " is-hovered" : ""}`}
+                      onClick={() => setSelectedSectionId(section.id)}
+                      onMouseEnter={() => setHoveredSectionId(section.id)}
+                      onMouseLeave={() => setHoveredSectionId(null)}
+                      onFocus={() => setHoveredSectionId(section.id)}
+                      onBlur={() => setHoveredSectionId(null)}
+                    >
                       <div>
                         <strong>{section.name}</strong>
                         <span>
@@ -572,8 +632,12 @@ export default function App() {
               {sectionList.map((section) => (
                 <button
                   key={section.id}
-                  className={`section-row${selectedSectionId === section.id ? " is-active" : ""}`}
+                  className={`section-row${selectedSectionId === section.id ? " is-active" : ""}${hoveredSectionId === section.id ? " is-hovered" : ""}`}
                   onClick={() => setSelectedSectionId(section.id)}
+                  onMouseEnter={() => setHoveredSectionId(section.id)}
+                  onMouseLeave={() => setHoveredSectionId(null)}
+                  onFocus={() => setHoveredSectionId(section.id)}
+                  onBlur={() => setHoveredSectionId(null)}
                 >
                   <div>
                     <strong>{section.name}</strong>

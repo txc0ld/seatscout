@@ -41,6 +41,8 @@ body {
     var(--bg);
   color: var(--text);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -68,6 +70,10 @@ button:focus-visible,
 input:focus-visible {
   outline: 2px solid rgba(129, 140, 248, 0.9);
   outline-offset: 3px;
+}
+
+button:active {
+  transform: translateY(0) scale(0.99);
 }
 
 .app-shell {
@@ -151,6 +157,28 @@ input:focus-visible {
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
   font-weight: 600;
+  position: relative;
+}
+
+.topbar-link::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  height: 1px;
+  background: rgba(129, 140, 248, 0.9);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.topbar-link:hover::after,
+.topbar-link:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .hero {
@@ -232,6 +260,16 @@ input:focus-visible {
 .section-row:hover,
 .stack-row:hover {
   transform: translateY(-2px) scale(1.01);
+}
+
+.primary-button:hover,
+.ghost-button:hover,
+.journey-card:hover,
+.chip-button:hover,
+.venue-card:hover,
+.stack-row:hover,
+.section-row:hover {
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.22);
 }
 
 .hero-visual {
@@ -374,6 +412,32 @@ input:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: grid;
   gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.journey-card::before,
+.venue-card::before,
+.stack-row::before,
+.section-row::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.journey-card:hover::before,
+.journey-card:focus-visible::before,
+.venue-card:hover::before,
+.venue-card:focus-visible::before,
+.stack-row:hover::before,
+.stack-row:focus-visible::before,
+.section-row:hover::before,
+.section-row:focus-visible::before {
+  opacity: 1;
 }
 
 .journey-card strong,
@@ -474,6 +538,8 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  overflow: hidden;
 }
 
 .venue-card.compact {
@@ -559,6 +625,10 @@ input:focus-visible {
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 92px;
+  z-index: 8;
+  backdrop-filter: blur(18px);
 }
 
 .atlas-presets {
@@ -597,6 +667,11 @@ input:focus-visible {
   color: rgba(255, 255, 255, 0.22);
 }
 
+.search-field input:hover,
+.search-field input:focus-visible {
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.9);
+}
+
 .filter-group {
   display: grid;
   gap: 10px;
@@ -620,6 +695,8 @@ input:focus-visible {
 
 .map-shell {
   position: relative;
+  display: grid;
+  gap: 12px;
 }
 
 .seat-map {
@@ -639,20 +716,81 @@ input:focus-visible {
   fill: rgba(255, 255, 255, 0.64);
   font-family: var(--font-mono);
   font-size: 8px;
+  transition: fill 200ms ease;
 }
 
 .map-name.is-selected {
   fill: #000;
 }
 
-.map-section:hover {
-  opacity: 0.92;
+.map-name.is-hovered {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
+.map-section {
+  transition:
+    fill 200ms ease,
+    opacity 200ms ease,
+    stroke-width 200ms ease,
+    filter 200ms ease;
+}
+
+.map-section.is-hovered,
+.map-section.is-selected {
+  opacity: 1;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22));
+}
+
+.map-section.is-hovered {
+  stroke-width: 1.6;
 }
 
 .map-legend {
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 10px;
+}
+
+.map-preview,
+.map-preview-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.map-preview {
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.map-preview.is-hovering {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.22);
+}
+
+.map-preview-head strong,
+.map-preview-head span {
+  color: var(--text);
+}
+
+.map-preview-head span {
+  font-family: var(--font-mono);
+  color: rgba(129, 140, 248, 0.9);
+}
+
+.map-preview-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .venue-page .page-wrap {
@@ -722,6 +860,8 @@ input:focus-visible {
   justify-content: space-between;
   align-items: center;
   text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
 .stack-row strong,
@@ -744,6 +884,12 @@ input:focus-visible {
 .section-row.is-active {
   border-color: rgba(99, 102, 241, 0.3);
   background: rgba(99, 102, 241, 0.08);
+}
+
+.stack-row.is-hovered,
+.section-row.is-hovered {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .inspector {
@@ -906,6 +1052,28 @@ input:focus-visible {
   transform: translateY(0);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-sequence > *,
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes hero-rise {
   from {
     opacity: 0;
@@ -944,6 +1112,7 @@ input:focus-visible {
 
   .atlas-command-bar {
     grid-template-columns: 1fr;
+    top: 84px;
   }
 
   .atlas-presets {
@@ -992,6 +1161,12 @@ input:focus-visible {
     left: 14px;
     right: 14px;
     bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .map-preview,
+  .map-preview-head {
     flex-direction: column;
     align-items: flex-start;
   }
